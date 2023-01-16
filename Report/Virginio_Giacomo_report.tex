@@ -1,0 +1,454 @@
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[twoside,twocolumn]{article}
+
+\usepackage{blindtext} % Package to generate dummy text throughout this template 
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[english]{babel} % Language hyphenation and typographical rules
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+
+\usepackage{enumitem} % Customized lists
+\setlist[itemize]{noitemsep} % Make itemize lists more compact
+
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+\renewcommand\thesubsection{\roman{subsection}} % roman numerals for subsections
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+
+\usepackage{titling} % Customizing the title section
+
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref} % For hyperlinks in the PDF
+
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\setlength{\droptitle}{-4\baselineskip} % Move the title up
+
+\pretitle{\begin{center}\Huge\bfseries} % Article title formatting
+	\posttitle{\end{center}} % Article title closing formatting
+\title{Change in Twitter user's behavior, homophily and echo chamber effect regarding US politics after Elon Musk's acquisition} % Article title
+\author{%
+	\textsc{Giacomo Virginio}\\[1ex] % Your name
+	\normalsize University of Padua \\ % Your institution
+	\normalsize \href{mailto:giacomo.virginio@studenti.unipd.it}{giacomo.virginio@studenti.unipd.it} % Your email address
+}
+\date{} % Leave empty to omit a date
+\renewcommand{\maketitlehookd}{%
+	\begin{abstract}
+		\noindent This paper research the change in behavior and homophily / echo chamber effect of Twitter user regarding US politics due to Elon Musk's announcement and finalization of acquisition of the platform. This is performed as a student project conducted in the Network Science course a.y. 2022/2023 at the Data Science master degree at University of Padua.\\
+		The aim is to evaluate, using a Netowrk Science approach, whether the acquisition of Twitter made by Elon Musk, free speech absolutist who has lately been connected to the Right Wing, will change the interactions of users on Twitter, a social media which has historically been related to the Left Wing.\\
+		Here are described the methodologies used, the results obtained and possible improvements.
+	\end{abstract}
+}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+	
+	% Print the title
+	\maketitle
+	
+	%----------------------------------------------------------------------------------------
+	%	ARTICLE CONTENTS
+	%----------------------------------------------------------------------------------------
+	
+	\section{Introduction}
+	Social media has become of primary importance for politics and campaigning, Twitter specifically in the last years became the political platform of choice \cite{Statista:2022}.
+	Because of their algorithm design to increase user engagement, social media is constructed to favor the existence of echo chambers \cite{Cinelli:2021}.
+	
+	Elon Musk himself, before acquiring the company \cite{TwitterAcquisition}, claimed that Twitter had a Left-Wing bias \cite{MuskBias}, which is reflected in the disparity of banned and shadow-banned (limited public visibility) left and right related accounts, both nationally and internationally; he also recognizes the danger of social media causing an ever growing divide into far right and left echo chambers and said he acquired twitter in order for humanity to have "a common digital town square" \cite{MuskEcho} where user will be free to hold any civilized discussion.
+	
+	While it can be expected that Twitter's algorithm has been or will be modified to lower homophily and echo chamber effects, a change on Twitter's political balance can already be seen with the reactivation of previously banned accounts (with the Republican, former President, Donald Trump being the primary example). Moreover, the acquisition of the platform by a personality which is lately related to the right wing, despite declaring himself as a centrist \cite{MuskCenter}, has already caused the effect of some left-wing personalities threatening to permanently leave the platform to move on competitors (like Mastodon).
+	
+	%------------------------------------------------
+	
+	\section{Data Collection}
+	Data has been collected using Twitter's API performing full-archive search on v2 endpoint.
+	
+	The query text used to download the Tweets datasets is \textit{"(\#democrat OR \#democrats OR \#republican OR \#republicans) -is:reply -is:retweet"}, which retrieved any organic tweets or quote tweets presenting at least one of the four hashtags.
+	
+	The Replies datasets have been built by first filtering the Tweets datasets in order to keep the tweets with at least 5 replies, then extracting their ids and their author's ids; the query text used to download the datasets is \textit{"in\_reply\_to\_status\_id:"+str(tweet\_id[0])+" -from:"+str(tweet\_id[1])"}, where tweet\_id[0] and tweet\_id[1] are the id and author's id for each tweet.
+	
+	%------------------------------------------------
+	
+	\section{Methodology}
+	To analyze the changes, data has been collected in four different timeframes, which are the first two weeks of February, June, September and December.
+	The first timeframe is before Elon Musk's offer to buy Twitter, the second and third are between the offer and finalization of acquisition, the fourth is subsequent to the acquisition.
+	These timeframes are chosen in order to avoid events that might cause the polarization of political arguments towards a specific subject (such as the start of Ukraine War and the US midterm elections).
+	
+	\subsection{Methodology on Tweets Dataset}
+	For each dataset, Hashtags and Words are extracted from the tweets creating two Undirected Weighted Networks, where Hashtags (Words) are the Nodes, and the Edges are number of times two Hashtags (Words) appear in the same tweet.\\
+	
+	Tweets' \textit{sentiment} is obtained using VADER \cite{VADER}, an open source lexicon and rule-based sentiment analysis tool specifically attuned to sentiments expressed in social media; then Hashtags and Words also get a \textit{sentiment} scoring, equal to the average \textit{sentiment} of tweets they appear in.\\
+	
+	Hashtags are scored on how much they refer to the Right or Left wing through a score called \textit{political}; initially the Hashtags \textit{\#republican} and \textit{\#republicans} are given a score of 1, the Hashtags \textit{\#democrat} and \textit{\#democrats} are given a score of -1, and all other hashtags are given a score of 0. All hashtags are then rescored first using PLMP \cite{PLMP}, then applying the formula: 
+	\begin{equation*}
+		\begin{cases}
+			\sqrt{p/p_{max}} & \text{if $ p \geq 0 $}\\
+			-\sqrt{p/p_{min}} & \text{if $ p < 0 $}
+		\end{cases}       
+	\end{equation*} 
+	where $ p $ is the \textit{political} score of an Hashtag and $ p_{max} $ and $ (p_{min} $ are respectively the maximum and minimum \textit{political} score.
+	\textit{Political} score is then expanded to Tweets, by scoring a Tweet as the average score of Hashtag it contains, and then expanded to Words scoring them as the average score of tweets they appear in, the same approach used for \textit{sentiment}.\\
+	
+	Lastly we obtain for Tweets, Hashtags and Words the \textit{alignment} score, which represents whether the Tweet/Hashtag/Word is to be considered Right Wing (from 0 up to 1) or Left Wing (from 0 down to -1), by multiplying \textit{political} and \textit{sentiment} scores.
+	
+	\subsection{Methodology on Replies Dataset}
+	Replies are scored by \textit{sentiment} with the same approach used for Tweets.
+	
+	\textit{Political} score is equal to the average \textit{political} score of Hashtags also contained in the Tweets dataset that it contains, if any (which is a rare occasion), otherwise by the average score of Words also contained in the Tweets dataset that it contains.
+	
+	Then \textit{alignment} score is again obtained by multiplying \textit{political} and \textit{sentiment} scores.
+	
+	%------------------------------------------------
+	
+	\section{Hashtags Analysis}
+	\subsection{Metholodogy}
+	The Hashtags are analyzed in two different ways, the first is performed using only the nodes of the Hashtags Networks in R and their measurements, the second instead is performed using the whole Networks on Gephi.
+	
+	The four Hashtag Networks obtained are loaded on Gephi (each in a different workspace), but due to the size and high weight of edges between nodes with highest count in the network, any attempt at visualizing the structure of the network gives poor results, however Modularity can be used to obtain some insights.
+	
+	The process to obtain the Gephi visualizations used in the paper is the following:
+	\begin{itemize}[noitemsep]
+		\item The four nodes used in the search (\#democrat, \#democrats, \#republican, and \#republicans) are deleted from the network as keeping them would skew results, the number of nodes (edges) in the network after this passage are respectively 10690(108681), 14857(177823), 15333(182070) and 14983(179859).
+		\item Nodes size is set to 0.1, because we are interested in visualizing only labels.
+		\item Nodes that only appeared once are filtered out, using filter -> range:count -> set minimum as 2, the relative number of nodes(edges) remaining in the network then are 37.76\%(66.5\%), 39.57\%(70.22\%), 38.16\%(67.01\%) and 38.8\%(67.91\%).
+		\item PageRank and Modularity are obtained, edges weight are used in both calculations.
+		\item Labels are sized by ranking:PageRank, with minimum equal to 1, and maximum equal to 4.
+		\item Nodes are again filtered by count, now with the minimum set to manually to display roughly the top 200 nodes, the minimum for count is respectively 68, 92, 88 and 73, the number of nodes remaining in each network is 198, 200, 199 and 199.
+		\item Apply Radial Axis Layout, with settings: scaling width 50, group by Modularity, spar/axis ascending and spar/axis as spiral.
+		\item Apply Label Adjust layout.
+		\item Finally to obtain the four different types of graphs change label color by partition:Modularity and change label color by ranking:Sentiment/Political/Alignment.
+	\end{itemize}
+	\subsection{Results}
+	The figures \textit{\ref{fig:R_Hashtags_02}}, \textit{\ref{fig:R_Hashtags_06}}, \textit{\ref{fig:R_Hashtags_09}} and \textit{\ref{fig:R_Hashtags_12}} show the \textit{Political}, \textit{Sentiment} and \textit{Alignment} score for the top25 hashtags by count for each timeframe.
+	
+	The first important insight that can be noticed here is the fact that most Hashtags have a negative \textit{Sentiment}, especially those in June, which underlines the fact that people tend to use the social media to deliver negative messages.
+	Also between the Hashtags in December we can notice the presence of \#twitter, \#twitterfiles and \#elonmusk, all with a negative \textit{Sentiment} and \textit{Aligned} towards the Right Wing.
+	
+	No other overall change can be noticed however, except a "flatter" \textit{Alignment} for Hashtags in December.
+
+	Figures \textit{\ref{fig:Gephi_Modularity}}, \textit{\ref{fig:Gephi_Political}}, \textit{\ref{fig:Gephi_Sentiment}} and \textit{\ref{fig:Gephi_Alignment}} show the Gephi plots.
+	
+	By comparing the plots, especially the \textit{Modularity} and \textit{Alignment} ones we can obtain a number of insights: the biggest component is mainly neutral, nodes (and components) that refer to geographic locations both national and international are generally neutral, the other components are generally sided, the nodes that consistently have the most sided meaning are the ones that are explicitly sided and convey a negative message (e.g. \#democratsareevil, \#democratsaretheproblem, \#republicansaredestroyingamerica, \#gopbetrayedamerica).
+	
+	An overall a slightly lower \textit{Sentiment} in June data can again be noticed; \textit{Political} in February seems tending to the Left Wing, which is however strongly influenced by a decently sized component containing districts, which have really low \textit{Sentiment} and therefore is neutrally \textit{Aligned}; in September \textit{Political} seems instead tending to the Right Wing, seemingly with also a slight \textit{Alignment} more towards the Right Wing.
+	
+	Most importantly \textit{Alignment} seems to be shrinking towards neutrality overtime.
+	
+	
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/hashtags\_02}
+		\caption{Hashtags scores in February}\label{fig:R_Hashtags_02}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/hashtags\_06}
+		\caption{Hashtags scores in June}\label{fig:R_Hashtags_06}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/hashtags\_09}
+		\caption{Hashtags scores in September}\label{fig:R_Hashtags_09}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/hashtags\_12}
+		\caption{Hashtags scores in December}\label{fig:R_Hashtags_12}
+	\end{figure}
+	
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{Gephi/Modularity\_02}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Modularity\_06}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Modularity\_09}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Modularity\_12}
+		\caption{\textit{Modularity} from Gephi}\label{fig:Gephi_Modularity}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{Gephi/Political\_02}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Political\_06}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Political\_09}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Political\_12}
+		\caption{\textit{Political} from Gephi}\label{fig:Gephi_Political}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{Gephi/Sentiment\_02}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Sentiment\_06}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Sentiment\_09}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Sentiment\_12}
+		\caption{\textit{Sentiment} from Gephi}\label{fig:Gephi_Sentiment}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{Gephi/Alignment\_02}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Alignment\_06}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Alignment\_09}\\
+		\includegraphics[width=0.5\textwidth]{Gephi/Alignment\_12}
+		\caption{\textit{Alignment} from Gephi}\label{fig:Gephi_Alignment}
+	\end{figure}
+	
+	
+	%------------------------------------------------
+	\newpage
+	\section{Tweets Analysis}
+	Tweets are analyzed using R.
+	
+	Plots \textit{\ref{fig:R_density_political}}, \textit{\ref{fig:R_density_sentiment}} and \textit{\ref{fig:R_density_alignment}} show the change in density of tweets' \textit{Political}, \textit{Sentiment} and \textit{Alignment} over time.
+	The most notable changes here confirm what has been noticed earlier:
+	\begin{itemize}[noitemsep]
+		\item\textit{Political} tends towards the Right Wing in September, with also a small bump that differentiates its \textit{Alignment} density frpm the others, however it then returns to "normal" in December.
+		\item \textit{Sentiment} in June is overall lower, with both lower amount of positively scored tweets and higher amount of negatively scored tweets, but again it return to normality in the next timeframe.
+		\item \textit{Alignment} doesn't seem to change much overtime, except for a consistently higher density of completely neutrally \textit{aligned} tweets.
+	\end{itemize}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/density\_political}
+		\caption{\textit{Political} density}\label{fig:R_density_political}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/density\_sentiment}
+		\caption{\textit{Sentiment} density}\label{fig:R_density_sentiment}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/density\_alignment}
+		\caption{\textit{Alignment} density}\label{fig:R_density_alignment}
+	\end{figure}
+	\newpage
+	
+	Tweet measurements are then compared to explore possible dependency, plots \textit{\ref{fig:R_Heat_Political_Sentiment_02}}, \textit{\ref{fig:R_Heat_Political_Sentiment_06}}, \textit{\ref{fig:R_Heat_Political_Sentiment_09}} and \textit{\ref{fig:R_Heat_Political_Sentiment_12}} compare \textit{Political} to \textit{Sentiment}, however no conclusion can be drawn due to the number of completely neutral tweets, therefore for the following plots data has been filtered to only show tweets with \textit{Sentiment} outside the range $(-0.05,0.05)$.
+	
+	The dotted lines in the plots here represent the median, while the solid line represents linear regression between the two.
+	
+	Plots \textit{\ref{fig:R_Heat_Political_Sentiment_Filter_02}}, \textit{\ref{fig:R_Heat_Political_Sentiment_Filter_06}}, \textit{\ref{fig:R_Heat_Political_Sentiment_Filter_09}} and \textit{\ref{fig:R_Heat_Political_Sentiment_Filter_12}} show no great differences, except for one in September, which shows a more positive correlation between Right Wing \textit{Political} and Positive \textit{Sentiment}.
+	
+	Plots \textit{\ref{fig:R_Heat_Political_Alignment_Filter_02}}, \textit{\ref{fig:R_Heat_Political_Alignment_Filter_06}}, \textit{\ref{fig:R_Heat_Political_Alignment_Filter_09}} and \textit{\ref{fig:R_Heat_Political_Alignment_Filter_12}} obviously show some dependency (by the X shape of the heatmap), however that is due to the construction of \textit{Alignment}, the main difference here can be attributed to the slightly steeper linear regression line in June's plot.
+	
+	Plots \textit{\ref{fig:R_Heat_Alignment_Sentiment_Filter_02}}, \textit{\ref{fig:R_Heat_Alignment_Sentiment_Filter_06}}, \textit{\ref{fig:R_Heat_Alignment_Sentiment_Filter_09}} and \textit{\ref{fig:R_Heat_Alignment_Sentiment_Filter_12}} can be interpreted as "how positive or negative are the messages conveyed by user that tend to the Right or Left Wing" and it can be noticed from the graphs that while in February and December the relation between the two is positive, it is instead negative in June and September, which would denote a change in user behavior after the acquisition announcement, with however a return to the status-quo after the finalization.
+
+	\begin{figure}
+		\includegraphics[width=0.39\textwidth]{R\_Plots/Heat\_Political\_Sentiment\_02}
+		\caption{x: \textit{Political}, y: \textit{Sentiment}, Februray}\label{fig:R_Heat_Political_Sentiment_02}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.39\textwidth]{R\_Plots/Heat\_Political\_Sentiment\_06}
+		\caption{x: \textit{Political}, y: \textit{Sentiment}, June}\label{fig:R_Heat_Political_Sentiment_06}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.39\textwidth]{R\_Plots/Heat\_Political\_Sentiment\_09}
+		\caption{x: \textit{Political}, y: \textit{Sentiment}, September}\label{fig:R_Heat_Political_Sentiment_09}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.39\textwidth]{R\_Plots/Heat\_Political\_Sentiment\_12}
+		\caption{x: \textit{Political}, y: \textit{Sentiment}, December}\label{fig:R_Heat_Political_Sentiment_12}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Political\_Sentiment\_Filter\_02}
+		\caption{x: \textit{Political}, y: \textit{Sentiment}, Februray}\label{fig:R_Heat_Political_Sentiment_Filter_02}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Political\_Sentiment\_Filter\_06}
+		\caption{x: \textit{Political}, y: \textit{Sentiment}, June}\label{fig:R_Heat_Political_Sentiment_Filter_06}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Political\_Sentiment\_Filter\_09}
+		\caption{x: \textit{Political}, y: \textit{Sentiment}, September}\label{fig:R_Heat_Political_Sentiment_Filter_09}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Political\_Sentiment\_Filter\_12}
+		\caption{x: \textit{Political}, y: \textit{Sentiment}, December}\label{fig:R_Heat_Political_Sentiment_Filter_12}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Political\_Alignment\_Filter\_02}
+		\caption{x: \textit{Political}, y: \textit{Alignment}, Februray}\label{fig:R_Heat_Political_Alignment_Filter_02}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Political\_Alignment\_Filter\_06}
+		\caption{x: \textit{Political}, y: \textit{Alignment}, June}\label{fig:R_Heat_Political_Alignment_Filter_06}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Political\_Alignment\_Filter\_09}
+		\caption{x: \textit{Political}, y: \textit{Alignment}, September}\label{fig:R_Heat_Political_Alignment_Filter_09}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Political\_Alignment\_Filter\_12}
+		\caption{x: \textit{Political}, y: \textit{Alignment}, December}\label{fig:R_Heat_Political_Alignment_Filter_12}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Alignment\_Sentiment\_Filter\_02}
+		\caption{x: \textit{Alignment}, y: \textit{Sentiment}, Februray}\label{fig:R_Heat_Alignment_Sentiment_Filter_02}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Alignment\_Sentiment\_Filter\_06}
+		\caption{x: \textit{Alignment}, y: \textit{Sentiment}, June}\label{fig:R_Heat_Alignment_Sentiment_Filter_06}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Alignment\_Sentiment\_Filter\_09}
+		\caption{x: \textit{Alignment}, y: \textit{Sentiment}, September}\label{fig:R_Heat_Alignment_Sentiment_Filter_09}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Alignment\_Sentiment\_Filter\_12}
+		\caption{x: \textit{Alignment}, y: \textit{Sentiment}, December}\label{fig:R_Heat_Alignment_Sentiment_Filter_12}
+	\end{figure}
+	
+	
+	
+	%------------------------------------------------
+	\newpage
+	\section{Replies Analysis}
+	The analysis of the Replies dataset is performed by joining the tweets used to download the replies to the mean measures of their replies.
+	
+	This approach is done to analyze the average response to a tweet, which is an indicator of homophily / echo chamber; also the size of Tweets dataset which have at least 5 replies is much smaller than the size of the original Tweets dataset, in the order of 1/100, this means that we are looking at data that can be considered the most representative/important (since multiple users come in contact with such data), however at the same time results might not be the most reliable because of scarcity of data.
+	
+	Plots \textit{\ref{fig:R_Heat_Reply_Political_02}}, \textit{\ref{fig:R_Heat_Reply_Political_06}}, \textit{\ref{fig:R_Heat_Reply_Political_09}} and \textit{\ref{fig:R_Heat_Reply_Political_12}} show the relation between \textit{Political} score in Tweets and the mean \textit{Political} of their Replies.
+	The plots show that in February and then again in December both Tweets and Replies discussed the about the Left Wing, with an especially strong prevalence in February, while in June and September it shifted towards the right; the linear regression line shows however a consistent positive relation between Tweets and Replies, which means users replying tend to discuss more about the same Wing mentioned in the original Tweet, also the heatmap becomes flatter advancing in time, which might indicate that the relation, while still having the same strength overall, has a progressively lower variance.
+	
+	Plots \textit{\ref{fig:R_Heat_Reply_Sentiment_02}}, \textit{\ref{fig:R_Heat_Reply_Sentiment_06}}, \textit{\ref{fig:R_Heat_Reply_Sentiment_09}} and \textit{\ref{fig:R_Heat_Reply_Sentiment_12}} show the relationship regarding \textit{Sentiment} score.
+	The linear regression line in the plots again show a positive relation between Tweets and Replies, meaning positive Tweets tend to attract Positive Replies and viceversa, however this effect gets weaker over time; also the overall \textit{Sentiment} for both Tweets and Replies tends to shrink towards 0 over time, a sign that discussions might be more soft-spoken, or make use of different media than text (like images, that don't impact \textit{Sentiment} score).
+	
+	Finally, plots \textit{\ref{fig:R_Heat_Reply_Alignment_02}}, \textit{\ref{fig:R_Heat_Reply_Alignment_06}}, \textit{\ref{fig:R_Heat_Reply_Alignment_09}} and \textit{\ref{fig:R_Heat_Reply_Alignment_12}} show the relationship regarding \textit{Alignment} score.
+	Here a similar situation to \textit{Sentiment} plots can be seen, with a relation that is quite strong initially, but then drops significantly (albeit still present), and the overall score for both Tweets and Replies shrinking to 0 overtime.
+	
+	\begin{figure}[p]
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Political\_02}
+		\caption{\textit{Political} in x: tweet, y: replies, Februray}\label{fig:R_Heat_Reply_Political_02}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Political\_06}
+		\caption{\textit{Political} in x: tweet, y: replies, June}\label{fig:R_Heat_Reply_Political_06}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Political\_09}
+		\caption{\textit{Political} in x: tweet, y: replies, September}\label{fig:R_Heat_Reply_Political_09}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Political\_12}
+		\caption{\textit{Political} in x: tweet, y: replies, December}\label{fig:R_Heat_Reply_Political_12}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Sentiment\_02}
+		\caption{\textit{Sentiment} in x: tweet, y: replies, Februray}\label{fig:R_Heat_Reply_Sentiment_02}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Sentiment\_06}
+		\caption{\textit{Sentiment} in x: tweet, y: replies, June}\label{fig:R_Heat_Reply_Sentiment_06}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Sentiment\_09}
+		\caption{\textit{Sentiment} in x: tweet, y: replies, September}\label{fig:R_Heat_Reply_Sentiment_09}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Sentiment\_12}
+		\caption{\textit{Sentiment} in x: tweet, y: replies, December}\label{fig:R_Heat_Reply_Sentiment_12}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Alignment\_02}
+		\caption{\textit{Alignment} in x: tweet, y: replies, Februray}\label{fig:R_Heat_Reply_Alignment_02}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Alignment\_06}
+		\caption{\textit{Alignment} in x: tweet, y: replies, June}\label{fig:R_Heat_Reply_Alignment_06}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Alignment\_09}
+		\caption{\textit{Alignment} in x: tweet, y: replies, September}\label{fig:R_Heat_Reply_Alignment_09}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=0.5\textwidth]{R\_Plots/Heat\_Reply\_Alignment\_12}
+		\caption{\textit{Alignment} in x: tweet, y: replies, December}\label{fig:R_Heat_Reply_Alignment_12}
+	\end{figure}
+
+	
+	%------------------------------------------------
+	\section{Conclusion}
+	Combining the results obtained it can be affirmed that while it looked like the announcement of Twitter's acquisition started an overall change in user behavior or political stance, the situation after it went through seems to have return at the pre-announcement standards. The only consistent effect on Tweets being a shift towards neutrality in \textit{Sentiment}, which also reflects on \textit{Alignment}, which might be due to an increase in media usage over text instead of an actual higher neutrality of Tweets written.
+	
+	The Replies analysis offer similar results about an increase in neutrality, however also show a decrease in the strength of the homophily effect, which is seen in particular in the difference between February and June data, which likely means the change came due to an intrinsic change in user behavior reacting to the announcement of the acquisition, rather that changes in algorithms or company policies (at least until now).
+	
+	Future improvements would include:\\
+	- Usage of words rather than hashtags in data collection, which however raises the computational complexity, both for the vast increase in data availability but mostly for the increase of complexity in the usage of techniques like PMLP to obtain \textit{Political} score using Words instead of Hashtags.\\
+	- A more advanced process to obtain \textit{Sentiment} score, using ML techniques trained on datasets of political interactions on social media, rather than a lexicon approach, and possibly a way to score medias different than text.\\
+	- Introducing in the analysis some scoring not only for single tweets, but also for users, that could be done both from their tweets' history and their profile bio (which has been already extensively done in other researches \cite{Bio}).\\
+	- Expanding \textit{Sentiment} analysis to include also emotion detection.
+	
+	%----------------------------------------------------------------------------------------
+	%	REFERENCE LIST
+	%----------------------------------------------------------------------------------------
+	
+	\begin{thebibliography}{99}
+		
+		\bibitem{Statista:2022}
+		Dixon, S. (2022).
+		\newblock Social media and politics in the United States - Statistics \& Facts.
+		\newblock {\em Statista}.
+		\newblock \url{https://www.statista.com/topics/3723/social-media-and-politics-in-the-united-states/}
+		
+		\bibitem{Cinelli:2021}
+		Cinelli, M. and de Francisi Morales, G. and Galeazzi, A. and Quattrociocchi, W. and Starnini, M. (2021).
+		\newblock The echo chamber effect on social media.
+		\newblock {\em Proceedings of the National Academy of Sciences}, 118 - 9.
+		\newblock \url{https://www.pnas.org/doi/abs/10.1073/pnas.2023301118}
+		
+		\bibitem{TwitterAcquisition}
+		\newblock Acquisition of Twitter by Elon Musk
+		\newblock {\em Wikipedia}, seen 16/01/2022.
+		\newblock \url{https://en.wikipedia.org/wiki/Acquisition_of_Twitter_by_Elon_Musk}
+		
+		\bibitem{MuskBias}
+		Musk, E. R. (2022).
+		\newblock {\em Twitter}.
+		\newblock \url{https://twitter.com/elonmusk/status/1523653429410770945}
+		
+		\bibitem{MuskEcho}
+		Musk, E. R. (2022).
+		\newblock {\em Twitter}.
+		\newblock \url{https://twitter.com/elonmusk/status/1585619322239561728}
+		
+		\bibitem{MuskCenter}
+		Musk, E. R. (2022).
+		\newblock {\em Twitter}.
+		\newblock \url{https://twitter.com/elonmusk/status/1519735033950470144}
+		
+		\bibitem{VADER}
+		Hutto, C. and Gilbert, E. (2014).
+		\newblock VADER: A Parsimonious Rule-Based Model for Sentiment Analysis of Social Media Text.
+		\newblock {\em Proceedings of the International AAAI Conference on Web and Social Media}, 8(1), 216-225.
+		\newblock \url{https://doi.org/10.1609/icwsm.v8i1.14550}
+		
+		\bibitem{PLMP}
+		Erseghe, T. and Badia, L and Dzanko, L. and Suitner, C. (2022).
+		\newblock PLMP: A method to map the linguistic markers of the social discourse onto its semantic network
+		\newblock {\em Proceedings ASONAM, İstanbul, Turkey, November 2022.}.
+		
+		\bibitem{Bio}
+		Rogers, N. and Jones, J. J.
+		\newblock Using Twitter Bios to Measure Changes in Self-Identity: Are Americans Defining Themselves More Politically Over Time? (2021)
+		\newblock {\em Journal of Social Computing} March 2021, 2(1): 1-13.
+		\newblock \url{https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9355032}
+		
+		
+	\end{thebibliography}
+	
+	%----------------------------------------------------------------------------------------
+	
+\end{document}
